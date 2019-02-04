@@ -1,0 +1,253 @@
+
+<!DOCTYPE html>
+<html>
+  <head>
+	<title>Bản đồ vùng Hoenn - Pokemon</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+	<!--khai bao jquery-ui--->
+	<link rel="stylesheet" href="http://dev.dothanhlong.org/lib/jquery-ui-1.10.3.custom/development-bundle/themes/base/jquery.ui.all.css">
+	<script src="http://dev.dothanhlong.org/lib/jquery-ui-1.10.3.custom/development-bundle/jquery-1.9.1.js"></script>
+	<script src="http://dev.dothanhlong.org/lib/jquery-ui-1.10.3.custom/development-bundle/ui/jquery.ui.core.js"></script>
+	<script src="http://dev.dothanhlong.org/lib/jquery-ui-1.10.3.custom/development-bundle/ui/jquery.ui.widget.js"></script>
+	<!-------------------------------dialog------------------------------------------------------------->
+	<script src="http://dev.dothanhlong.org/lib/jquery-ui-1.10.3.custom/development-bundle/ui/jquery.ui.mouse.js"></script>
+	<script src="http://dev.dothanhlong.org/lib/jquery-ui-1.10.3.custom/development-bundle/ui/jquery.ui.draggable.js"></script>
+	<script src="http://dev.dothanhlong.org/lib/jquery-ui-1.10.3.custom/development-bundle/ui/jquery.ui.position.js"></script>
+	<script src="http://dev.dothanhlong.org/lib/jquery-ui-1.10.3.custom/development-bundle/ui/jquery.ui.resizable.js"></script>
+	<script src="http://dev.dothanhlong.org/lib/jquery-ui-1.10.3.custom/development-bundle/ui/jquery.ui.dialog.js"></script>
+	<script src="http://dev.dothanhlong.org/lib/jquery-ui-1.10.3.custom/development-bundle/ui/jquery.ui.effect.js"></script>
+	<script src="http://dev.dothanhlong.org/lib/jquery-ui-1.10.3.custom/development-bundle/ui/jquery.ui.effect-blind.js"></script>
+	<script src="http://dev.dothanhlong.org/lib/jquery-ui-1.10.3.custom/development-bundle/ui/jquery.ui.effect-explode.js"></script>
+	<!----------------------------------------------------------------------------------------------->
+	<script src="http://dev.dothanhlong.org/lib/jquery-ui-1.10.3.custom/development-bundle/ui/jquery.ui.tabs.js"></script>
+	<script src="http://dev.dothanhlong.org/lib/jquery-ui-1.10.3.custom/development-bundle/ui/jquery.ui.datepicker.js"></script>
+	<script src="http://dev.dothanhlong.org/lib/jquery-ui-1.10.3.custom/development-bundle/ui/jquery.ui.accordion.js"></script>
+	<script src="http://dev.dothanhlong.org/lib/jquery-ui-1.10.3.custom/development-bundle/ui/jquery.ui.button.js"></script>
+	<!--<link rel="stylesheet" href="http://dev.dothanhlong.org/lib/jquery-ui-1.10.3.custom/development-bundle/demos/demos.css">-->
+	<!--ket thuc khai bao jquery-ui--->
+	
+    
+    <script src="http://dev.dothanhlong.org/lib/OpenLayers/OpenLayersdev.js"></script>
+    <script type="text/javascript">
+	OpenLayers.ProxyHost = "proxy.php?url=";
+	var extent='127.113,28.2454,146.798,46.5095';
+	//var extent='miny,minx,maxy,maxx';
+	var arr=extent.split(',');
+	var a=eval(Number(arr[0]));
+	var b=eval(Number(arr[1]));
+	var c=eval(Number(arr[2]));
+	var d=eval(Number(arr[3]));
+	
+	//extent = new OpenLayers.Bounds(a,b,c,d).transform(new OpenLayers.Projection("EPSG:4326"), new OpenLayers.Projection("EPSG:3857"));
+	//map.zoomToExtent(extent);
+	
+	function init() {
+	map = new OpenLayers.Map("map", {
+		controls: [
+			new OpenLayers.Control.Navigation(),
+			new OpenLayers.Control.PanZoomBar({'zoomWorldIcon': true}),
+			new OpenLayers.Control.ScaleLine(),
+			new OpenLayers.Control.MousePosition(),
+			new OpenLayers.Control.Permalink(),
+			new OpenLayers.Control.OverviewMap({
+			div: document.getElementById('layer_overviewMap_control'),
+			roundedCorner: false
+			}),
+			new OpenLayers.Control.KeyboardDefaults(),
+			new OpenLayers.Control.LayerSwitcher({
+			div: document.getElementById('layer_switcher_control'),
+			roundedCorner: false
+			})
+		],
+		maxExtent: new OpenLayers.Bounds(a,b,c,d).transform(new OpenLayers.Projection("EPSG:4326"), new OpenLayers.Projection("EPSG:3857")),//can tinh lai cho rong mot xiu
+		maxResolution: "auto", 
+		//projection:"EPSG:3857", 
+		numZoomLevels: 6,
+		units: 'm',
+		projection: new OpenLayers.Projection("EPSG:3857"),
+		displayProjection: new OpenLayers.Projection("EPSG:4326")
+		//allOverlays: true
+	});
+	
+	var urlmapfile = "http://dev.dothanhlong.org/cgi-bin/pokemon_map_hoenn/qgis_mapserv.fcgi?";
+			 
+			 var format="image/png";
+			 var opacity = 0.5;
+			 
+			var URLBASEMAP = 'http://g1.cloudgis.vn/services/rest/maps';
+			var gcloud = new OpenLayers.Layer.OSM("gcloud", URLBASEMAP + "/roadmap/tile/${z}/${x}/${y}.png", {numZoomLevels: 19});
+			map.addLayer(gcloud);
+			
+			var cycle = new OpenLayers.Layer.OSM("OpenCycleMap",
+												["http://a.tile.thunderforest.com/cycle/${z}/${x}/${y}.png",
+												 "http://b.tile.thunderforest.com/cycle/${z}/${x}/${y}.png",
+												 "http://c.tile.thunderforest.com/cycle/${z}/${x}/${y}.png"]);
+		   map.addLayer(cycle);
+
+			
+			 var osm = new OpenLayers.Layer.OSM();
+				map.addLayers([osm]);
+				
+				layer = new OpenLayers.Layer.WMS(
+                    "Pokemon - Japan map", urlmapfile,
+                    {
+                        LAYERS: 'Pokemon - Japan map',
+						transparent:"true",
+                        format: format
+                    },
+                    {singleTile: false, ratio: 1, isBaseLayer: false, visibility: true}
+                );
+				map.addLayer(layer);
+				Hoenn_route = new OpenLayers.Layer.WMS(
+                    "Hoenn route", urlmapfile,
+                    {
+                        LAYERS: 'Hoenn route',
+						transparent:"true",
+                        format: format
+                    },
+                    {singleTile: false, ratio: 1, isBaseLayer: false, visibility: false}
+                );
+				map.addLayer(Hoenn_route);
+				Hoenn_Area = new OpenLayers.Layer.WMS(
+                    "Hoenn Area", urlmapfile,
+                    {
+                        LAYERS: 'Hoenn Area',
+						transparent:"true",
+                        format: format
+                    },
+                    {singleTile: false, ratio: 1, isBaseLayer: false, visibility: false}
+                );
+				map.addLayer(Hoenn_Area);
+				Hoenn_old_map = new OpenLayers.Layer.WMS(
+                    "Hoenn old map", urlmapfile,
+                    {
+                        LAYERS: 'Hoenn old map',
+						transparent:"true",
+                        format: format
+                    },
+                    {singleTile: false, ratio: 1, isBaseLayer: false, visibility: false}
+                );
+				map.addLayer(Hoenn_old_map);
+				
+				var customweatherwms = new OpenLayers.Layer.WMS(
+                "Bản đồ mây",
+                "http://maps.customweather.com/image?client=ucl_test&client_password=t3mp",
+                {
+                    transparent: 'TRUE',
+                    layers: 'global_ir_satellite_10km'
+                },
+                    {singleTile: true, ratio: 1, isBaseLayer: false, displayInLayerSwitcher: true, visibility: false} 
+				);
+				
+				forecasts = new OpenLayers.Layer.WMS(
+                    "Thời tiết", "http://maps.customweather.com/image?client=ucl_test&client_password=t3mp",
+                    {
+                        LAYERS: 'forecasts',
+						transparent:"true",
+                        format: format
+                    },
+                    //{singleTile: false, ratio: 1, isBaseLayer: false, displayInLayerSwitcher: true, minScale: 1000000, visibility: false} 
+					{singleTile: false, ratio: 1, isBaseLayer: false, displayInLayerSwitcher: true, visibility: false} 
+                );
+			
+			map.addLayers([forecasts,customweatherwms]);
+			
+			
+//xem thong tin			
+			//-------------info control------------------------------------------
+			infoControls = {
+				click: new OpenLayers.Control.WMSGetFeatureInfo({
+					url: urlmapfile, 
+					title: 'Identify features by clicking',
+					layers: [layer],
+					queryVisible: true
+				}),
+				hover: new OpenLayers.Control.WMSGetFeatureInfo({
+					url: urlmapfile, 
+					title: 'Identify features by clicking',
+					layers: [layer],
+					hover: true,
+					// defining a custom format options here
+					formatOptions: {
+						typeName: 'water_bodies', 
+						featureNS: 'http://www.openplans.org/topp'
+					},
+					queryVisible: true
+				})
+			};
+			extent = new OpenLayers.Bounds(a,b,c,d).transform(new OpenLayers.Projection("EPSG:4326"), new OpenLayers.Projection("EPSG:3857"));
+			map.zoomToExtent(extent);
+			//info2
+			for (var i in infoControls) { 
+				infoControls[i].events.register("getfeatureinfo", this, showInfo);
+				map.addControl(infoControls[i]); 
+			}
+			//end info2
+			//info3
+			function showInfo(evt) {
+			var dialoginfo=document.getElementById('dialog');
+			//var infolist=document.getElementById('infolist_re');
+			if (evt.features && evt.features.length) {
+				 highlightLayer.destroyFeatures();
+				 highlightLayer.addFeatures(evt.features);
+				 highlightLayer.redraw();
+			} else {
+				//$('responseText').innerHTML = evt.text;
+				//infolist.innerHTML=evt.text;
+				if(evt.text!=''){
+					dialoginfo.innerHTML=evt.text;
+						$(function() {
+							$( "#dialog" ).dialog({
+								//height:390,
+								//width:470,
+								height:300,
+								width:400,
+								resizable: false
+							});
+						});
+				}
+			}
+		}
+		
+		
+			for (var key in infoControls) {
+				var control = infoControls[key];
+					control.layers = [layer];
+					infoControls.click.activate();
+			}
+		
+			
+	};
+	//------------end init----------------
+    </script>
+	<style type="text/css">
+	html, body{
+			height: 98%; 
+		} 
+		#mapn {
+			margin: 0;
+			width: 100%;
+			height: 100%;
+			border: 1px solid #ccc;
+		}
+		#text {
+			position: absolute;
+			top: 5em;
+			left: 7em;
+			/*width: 512px;*/
+			z-index: 20000;
+			/*background-color: white;*/
+			background: rgb(255, 255, 255);
+			background: rgba(255, 255, 255, 0.7);
+			padding: 0 0.5em 0.5em 0.5em;
+		}
+	</style>
+  </head>
+  <body id="body" onload="init();">
+	<div id="map" style="height:100%;"></div>
+	
+	<div id="dialog" title="Thông tin vị trí">
+  </body>
+</html>
